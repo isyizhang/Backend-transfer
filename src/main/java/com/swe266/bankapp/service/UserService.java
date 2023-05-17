@@ -15,7 +15,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public boolean isValidPassword(String password){
+    public boolean isValidPassword(String password) {
         String pattern = "^[_\\-\\.0-9a-z]{1,127}$";
         return password.matches(pattern);
     }
@@ -40,22 +40,22 @@ public class UserService {
         return true;
     }
 
-    public ResponseEntity saveNewUser(User user){
+    public ResponseEntity saveNewUser(User user) {
         String username = user.getUsername();
         String password = user.getPassword();
         Double balance = user.getBalance();
 
-        if(!isValidUsername(username) || !isValidPassword(password)){
+        if (!isValidUsername(username) || !isValidPassword(password)) {
             String errorMessage = "Invalid input. Please provide valid username and password.";
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
 
-        if(!isValidInitialDeposit(balance)){
+        if (!isValidInitialDeposit(balance)) {
             String errorMessage = "Invalid input. Please provide valid initial balance.";
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
 
-        if(userRepository.existsUserByUsername(username)){
+        if (userRepository.existsUserByUsername(username)) {
             String errorMessage = "Username exists, please change a name";
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
@@ -64,5 +64,45 @@ public class UserService {
         return ResponseEntity.ok(savedUser);
     }
 
+    /**
+     * Below are methods for account transactions
+     */
+    public ResponseEntity logIn(String username, String password) {
+        User user = userRepository.findUserByNameAndPassword(username, password);
+        if (user == null) {
+            String errorMessage = "Invalid username or password.";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+        }
+
+        return ResponseEntity.ok(user);
+    }
+
+    public ResponseEntity deposit(String username, double amount) {
+        if (!isValidUsername(username) || amount <= 0) {
+            String errorMessage = "Invalid input. Please provide a valid username and a positive amount for deposit.";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        userRepository.deposit(username, amount);
+        String successMessage = "Deposit of " + amount + " for user '" + username + "' successful.";
+        return ResponseEntity.ok(successMessage);
+    }
+
+    public ResponseEntity withdraw(String username, double amount) {
+        if (!isValidUsername(username) || amount <= 0) {
+            String errorMessage = "Invalid input. Please provide a valid username and a positive amount for withdrawal.";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        double currentBalance = userRepository.checkBalance(username);
+        if (amount > currentBalance) {
+            String errorMessage = "Insufficient balance for user '" + username + "'.";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        userRepository.withdraw(username, amount);
+        String successMessage = "Withdrawal of " + amount + " from user '" + username + "' successful.";
+        return ResponseEntity.ok(successMessage);
+    }
 
 }
