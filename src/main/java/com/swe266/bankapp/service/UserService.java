@@ -40,7 +40,7 @@ public class UserService {
         }
 
         //register and login success
-        session.setAttribute("currentUser", user);
+        session.setAttribute("currentUser", username);
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }
@@ -64,7 +64,7 @@ public class UserService {
             String errorMessage = "Wrong Password";
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
         }
-        session.setAttribute("currentUser", userResult);
+        session.setAttribute("currentUser", username);
         return ResponseEntity.ok(userResult);
     }
 
