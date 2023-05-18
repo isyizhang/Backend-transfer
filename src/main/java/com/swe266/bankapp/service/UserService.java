@@ -27,10 +27,9 @@ public class UserService {
         String username = user.getUsername();
         String password = user.getPassword();
         Double balance = user.getBalance();
-        session.setAttribute("currentUser", username);
 
         //validation
-        if (!isValidUsername(username) || !isValidPassword(password)) {
+        if (!isValidUsername(username) || !isValidPassword(password)) { // bad code - not validate the username
             String errorMessage = "Invalid input. Please provide valid username and password.";
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
@@ -49,6 +48,7 @@ public class UserService {
         user.setPassword(encodedPassword);
 
         //register and login success
+        session.setAttribute("currentUser", username);
         User savedUser = userRepository.save(user);
         savedUser.setPassword(null);
         return ResponseEntity.ok(savedUser);
@@ -60,13 +60,13 @@ public class UserService {
     public ResponseEntity logIn(User user, HttpSession session) {
         String username = user.getUsername();
         String password = user.getPassword();
-        session.setAttribute("currentUser", username);
 
-        // validation
+         //validation
         if (!isValidUsername(username) || !isValidPassword(password)) {
             String errorMessage = "Invalid input. Please provide valid username and password.";
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
+
 
         if(!userRepository.existsUserByUsername(username)){
             String errorMessage = "User Not Found";
@@ -80,6 +80,7 @@ public class UserService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
         }
         // login success
+        session.setAttribute("currentUser", username);
         userResult.setPassword(null);
         return ResponseEntity.ok(userResult);
     }

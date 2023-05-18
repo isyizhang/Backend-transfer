@@ -22,21 +22,40 @@ public class UserRepository {
      * @param user
      */
     public User save(User user) {
-        String sql = "INSERT INTO User (username, password, balance) VALUES ('" + user.getUsername() +
-                "', '" + user.getPassword() + "', " + user.getBalance() + ")";
-        jdbcTemplate.update(sql);
+        String sql = "INSERT INTO User (username, password, balance) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, user.getUsername(), user.getPassword(), user.getBalance());
         return user;
     }
+
 
     /**
      * To check user exists or not
      * @param username
      */
     public boolean existsUserByUsername(String username) {
-        String sql = "SELECT COUNT(*) FROM User WHERE username = '" + username + "'";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        String sql = "SELECT COUNT(*) FROM User WHERE username = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, username);
         return count != null && count > 0;
     }
+
+
+//    public User findUserByNameAndPassword(String username, String password) {
+//        String sql = "SELECT * FROM User WHERE username = '"
+//                + username + "' AND password = '" + password + "'";
+//
+//        try {
+//            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
+//                User user = new User();
+//                user.setId(rs.getLong("id"));
+//                user.setUsername(rs.getString("username"));
+//                user.setPassword(rs.getString("password"));
+//                user.setBalance(rs.getDouble("balance"));
+//                return user;
+//            });
+//        } catch (EmptyResultDataAccessException e) {
+//            return null; // Return null when no matching user is found
+//        }
+//    }
 
     /**
      * To find user by username

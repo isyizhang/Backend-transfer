@@ -20,8 +20,13 @@ public class UserController {
         return userService.saveNewUser(user, session);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity login(@RequestBody User user, HttpSession session) {
+    @GetMapping("/login")
+    public ResponseEntity login(@RequestParam("username") String username,
+                                @RequestParam("password") String password,
+                                HttpSession session) {
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
         return userService.logIn(user, session);
     }
 
