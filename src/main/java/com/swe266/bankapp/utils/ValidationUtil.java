@@ -1,5 +1,7 @@
 package com.swe266.bankapp.utils;
 
+import java.util.regex.Pattern;
+
 public class ValidationUtil {
 
     public static boolean isValidPassword(String password) {
@@ -19,17 +21,24 @@ public class ValidationUtil {
     }
 
     public static boolean isValidAmount(double input) {
-        int fractional = (int) (input * 100) % 100;
 
 
         if (input < 0.00 || input > 4294967295.99) {
             return false;
         }
-        // Check if fractional amount is exactly two digits
-        if (fractional < 0 || fractional > 99) {
+        String stringValue = Double.toString(input);
+        if (!stringValue.contains(".")) {
+            if (stringValue.matches("(0|[1-9][0-9]*)")) {
+                return true;
+            }
+            return false;
+        }
+        String[] strings = stringValue.split("\\.");
+        if (strings.length >= 2) {
             return false;
         }
         return true;
+
     }
 
 }
