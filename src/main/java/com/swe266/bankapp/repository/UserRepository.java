@@ -17,6 +17,10 @@ public class UserRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * To save user to database
+     * @param user
+     */
     public User save(User user) {
         String sql = "INSERT INTO User (username, password, balance) VALUES ('" + user.getUsername() +
                 "', '" + user.getPassword() + "', " + user.getBalance() + ")";
@@ -24,30 +28,20 @@ public class UserRepository {
         return user;
     }
 
-    public User findUserByNameAndPassword(String username, String password) {
-        String sql = "SELECT * FROM User WHERE username = '"
-                + username + "' AND password = '" + password + "'";
-
-        try {
-            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
-                User user = new User();
-                user.setId(rs.getLong("id"));
-                user.setUsername(rs.getString("username"));
-                //user.setPassword(rs.getString("password"));
-                user.setBalance(rs.getDouble("balance"));
-                return user;
-            });
-        } catch (EmptyResultDataAccessException e) {
-            return null; // Return null when no matching user is found
-        }
-    }
-
+    /**
+     * To check user exists or not
+     * @param username
+     */
     public boolean existsUserByUsername(String username) {
         String sql = "SELECT COUNT(*) FROM User WHERE username = '" + username + "'";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return count != null && count > 0;
     }
 
+    /**
+     * To find user by username
+     * @param username
+     */
     public User findUserByUsername(String username) {
         String sql = "SELECT * FROM User WHERE username = ?";
         try {
@@ -55,7 +49,7 @@ public class UserRepository {
                 User user = new User();
                 user.setId(rs.getLong("id"));
                 user.setUsername(rs.getString("username"));
-                //user.setPassword(rs.getString("password"));
+                user.setPassword(rs.getString("password"));
                 user.setBalance(rs.getDouble("balance"));
                 return user;
             });

@@ -40,14 +40,10 @@ public class UserController {
         return userService.checkBalance(session);
     }
 
-    /**
-     * Controller for user logout
-     */
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
-        return "redirect"; // Redirect to the login page or any other desired page
+        return "redirect";
     }
-
 
 }
