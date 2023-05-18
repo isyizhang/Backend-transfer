@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.servlet.http.HttpSession;
-
 import static com.swe266.bankapp.utils.ValidationUtil.*;
 
 @Service
@@ -103,8 +102,8 @@ public class UserService {
         }
 
         try {
-            User updatedUser = userRepository.depositBalance(username, amount);
-            updatedUser.setPassword(null);
+            User updatedUser = userRepository.depositBalance(username, amount); //bad code
+            //updatedUser.setPassword(null);  shouldn't return user's password and id
             return ResponseEntity.ok(updatedUser);
         } catch (IllegalStateException e) {
             String errorMessage = "Deposit Failed";
