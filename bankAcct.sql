@@ -1,3 +1,5 @@
+-- Database: MySQL
+
 CREATE DATABASE bank;
 USE bank;
 
