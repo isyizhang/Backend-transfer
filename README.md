@@ -11,12 +11,16 @@ Collaborators: Qihui Jian, Xiaowen Sun, Ying Che, Yi Zhang
 - [Node.js and npm](https://nodejs.org/en/download)
 
 ### Build Database
-- Open MySQL Workbench and connect to local instance 3306
-- Use the SQL script provided in [`bankAcct.sql`](https://github.com/isyizhang/BankApplication/blob/main/bankAcct.sql) to create database and table
+1. Set up MySQL Workbench:
+   - Open MySQL Workbench and connect to local instance 3306
+
+2. Create schema:
+   - Use the SQL script provided in [`bankAcct.sql`](https://github.com/isyizhang/BankApplication/blob/main/bankAcct.sql) to create database and table
 
 ### Build Project
+   - Download and Open code of project in IntelliJ IDEA
+
 #### Backend：
-Download and Open code of project in IntelliJ IDEA
 1. Set up database account:
    -  Open `src > main > resources`
     - Open the `application.properties` file, input your own MySQL username and password
@@ -36,5 +40,3 @@ Download and Open code of project in IntelliJ IDEA
 
 4. A new page will be rendered:
     - http://localhost:3000/
-
-
