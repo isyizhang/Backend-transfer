@@ -20,7 +20,7 @@ Collaborators: Qihui Jian, Xiaowen Sun, Ying Che, Yi Zhang
 ### Build Project
    - Download and Open code of project in IntelliJ IDEA
 
-#### Backend：
+#### Backend - Spring Framework：
 1. Set up database account:
    -  Open `src > main > resources`
     - Open the `application.properties` file, input your own MySQL username and password
@@ -28,7 +28,7 @@ Collaborators: Qihui Jian, Xiaowen Sun, Ying Che, Yi Zhang
 2. Start the backend:
     - Run BankApplication:  src > main > java > com.swe266.bankapp
 
-#### Frontend:
+#### Frontend - React Framework:
 1. Change directory to frontend using the following command:
     - cd frontend
 
