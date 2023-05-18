@@ -1,7 +1,10 @@
 -- Database: MySQL
 
-CREATE DATABASE bank;
+CREATE DATABASE IF NOT EXISTS bank;
 USE bank;
+
+-- Drop the 'user' table if it exists
+DROP TABLE IF EXISTS user;
 
 CREATE TABLE user (
     id INT AUTO_INCREMENT PRIMARY KEY,
