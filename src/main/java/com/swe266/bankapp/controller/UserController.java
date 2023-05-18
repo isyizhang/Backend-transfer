@@ -2,10 +2,13 @@ package com.swe266.bankapp.controller;
 
 
 import com.swe266.bankapp.entity.User;
+import com.swe266.bankapp.request.TransactionRequest;
 import com.swe266.bankapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpSession;
 
 @RestController
 public class UserController {
@@ -13,28 +16,38 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity register(@RequestBody User user) {
-        return userService.saveNewUser(user);
+    public ResponseEntity register(@RequestBody User user, HttpSession session) {
+        return userService.saveNewUser(user, session);
     }
 
-    /**
-     * Below are account related controllers.
-     * @param username
-     * @param password
-     * @return
-     */
     @PostMapping("/login")
-    public ResponseEntity login(@RequestParam String username, @RequestParam String password) {
-        return userService.logIn(username, password);
+    public ResponseEntity login(@RequestBody User user, HttpSession session) {
+        return userService.logIn(user, session);
     }
 
     @PostMapping("/deposit")
-    public ResponseEntity deposit(@RequestParam String username, @RequestParam double amount) {
-        return userService.deposit(username, amount);
+    public ResponseEntity deposit(@RequestBody TransactionRequest depositRequest, HttpSession session) {
+        return userService.deposit(depositRequest, session);
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity withdraw(@RequestParam String username, @RequestParam double amount) {
-        return userService.withdraw(username, amount);
+    public ResponseEntity withdraw(@RequestBody TransactionRequest withdrawRequest, HttpSession session) {
+        return userService.withdraw(withdrawRequest, session);
     }
+
+    @GetMapping("/check")
+    public ResponseEntity checkBalance(HttpSession session){
+        return userService.checkBalance(session);
+    }
+
+    /**
+     * Controller for user logout
+     */
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect"; // Redirect to the login page or any other desired page
+    }
+
+
 }

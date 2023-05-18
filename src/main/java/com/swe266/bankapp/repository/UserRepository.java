@@ -24,20 +24,6 @@ public class UserRepository {
         return user;
     }
 
-//    public User findById(Long id) {
-//        String sql = "SELECT * FROM User WHERE id = ?";
-//        Object[] params = {id};
-//
-//        return jdbcTemplate.queryForObject(sql, params, (rs, rowNum) -> {
-//            User user = new User();
-//            user.setId(rs.getLong("id"));
-//            user.setUsername(rs.getString("username"));
-//            user.setPassword(rs.getString("password"));
-//            user.setBalance(rs.getBigDecimal("balance"));
-//            return user;
-//        });
-//    }
-
     public User findUserByNameAndPassword(String username, String password) {
         String sql = "SELECT * FROM User WHERE username = '"
                 + username + "' AND password = '" + password + "'";
@@ -47,7 +33,7 @@ public class UserRepository {
                 User user = new User();
                 user.setId(rs.getLong("id"));
                 user.setUsername(rs.getString("username"));
-                user.setPassword(rs.getString("password"));
+                //user.setPassword(rs.getString("password"));
                 user.setBalance(rs.getDouble("balance"));
                 return user;
             });
@@ -56,28 +42,42 @@ public class UserRepository {
         }
     }
 
-    //Exist: True   if not: False
     public boolean existsUserByUsername(String username) {
         String sql = "SELECT COUNT(*) FROM User WHERE username = '" + username + "'";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return count != null && count > 0;
     }
 
+    public User findUserByUsername(String username) {
+        String sql = "SELECT * FROM User WHERE username = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
+                User user = new User();
+                user.setId(rs.getLong("id"));
+                user.setUsername(rs.getString("username"));
+                //user.setPassword(rs.getString("password"));
+                user.setBalance(rs.getDouble("balance"));
+                return user;
+            });
+        } catch (EmptyResultDataAccessException e) {
+            return null; // Return null when no matching user is found
+        }
+    }
 
     /**
      * To add deposit to existing account.
      * @param username
      * @param amount
      */
-    public void deposit(String username, double amount) {
+    public User depositBalance(String username, double amount) {
         notNull(username);
         notNull(amount);
-
-        if (existsUserByUsername(username)) {
-            String depositSql = "UPDATE User SET balance = balance + ? WHERE username = ?";
-            jdbcTemplate.update(depositSql, amount, username);
+        String depositSql = "UPDATE User SET balance = balance + ? WHERE username = ?";
+        int rowsUpdated = jdbcTemplate.update(depositSql, amount, username);
+        if (rowsUpdated > 0) {
+            return findUserByUsername(username);
         } else {
-            throw new IllegalArgumentException("User with username '" + username + "' does not exist.");
+            throw new IllegalStateException("Failed to update balance for user with username '" + username + "'.");
         }
     }
 
@@ -86,70 +86,34 @@ public class UserRepository {
      * @param username
      * @return
      */
-    public double checkBalance(String username) {
+    public double findBalanceByUsername(String username) {
         notNull(username);
-
         String sql = "SELECT balance FROM User WHERE username = ?";
 
         try {
             Double balance = jdbcTemplate.queryForObject(sql, Double.class, username);
-            System.out.println("Balance for user '" + username + "': " + balance);
             return balance;
         } catch (EmptyResultDataAccessException e) {
             throw new IllegalArgumentException("User with username '" + username + "' does not exist.");
         }
     }
 
-
     /**
      * To withdraw money from existing account.
      * @param username
      * @param amount
      */
-    public void withdraw(String username, double amount) {
-        notNull(username);
+    public User withdrawBalance(String username, double amount) {
         notNull(amount);
+        double currentBalance = findBalanceByUsername(username);
+        double newBalance = currentBalance - amount;
 
-        if (existsUserByUsername(username)) {
-            double currentBalance = checkBalance(username);
-            double newBalance = currentBalance - amount;
-
-            if (newBalance >= 0) {
-                String withdrawSql = "UPDATE User SET balance = ? WHERE username = ?";
-                jdbcTemplate.update(withdrawSql, newBalance, username);
-                System.out.println("Withdrawal of " + amount + " from user '" + username + "' successful.");
-            } else {
-                throw new IllegalArgumentException("Insufficient balance for user '" + username + "'.");
-            }
+        String withdrawSql = "UPDATE User SET balance = ? WHERE username = ?";
+        int rowsUpdated = jdbcTemplate.update(withdrawSql, newBalance, username);
+        if (rowsUpdated > 0) {
+            return findUserByUsername(username);
         } else {
-            throw new IllegalArgumentException("User with username '" + username + "' does not exist.");
-        }
-    }
-
-
-    /**
-     * To support user login.
-     * @param username
-     * @param password
-     * @return
-     */
-    public User logIn(String username, String password) {
-        notNull(username);
-        notNull(password);
-
-        String sql = "SELECT * FROM User WHERE username = ? AND password = ?";
-
-        try {
-            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
-                User user = new User();
-                user.setId(rs.getLong("id"));
-                user.setUsername(rs.getString("username"));
-                user.setPassword(rs.getString("password"));
-                user.setBalance(rs.getDouble("balance"));
-                return user;
-            }, username, password);
-        } catch (EmptyResultDataAccessException e) {
-            throw new IllegalArgumentException("Invalid username or password.");
+            throw new IllegalStateException("Failed to update balance for user with username '" + username + "'.");
         }
     }
 

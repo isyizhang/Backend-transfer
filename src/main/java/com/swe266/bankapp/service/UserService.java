@@ -2,10 +2,14 @@ package com.swe266.bankapp.service;
 
 import com.swe266.bankapp.entity.User;
 import com.swe266.bankapp.repository.UserRepository;
+import com.swe266.bankapp.request.TransactionRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpSession;
+
+import static com.swe266.bankapp.utils.ValidationUtil.*;
 
 @Service
 public class UserService {
@@ -15,32 +19,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public boolean isValidPassword(String password) {
-        String pattern = "^[_\\-\\.0-9a-z]{1,127}$";
-        return password.matches(pattern);
-    }
-
-    public boolean isValidUsername(String username) {
-        String pattern = "^[_\\-\\.0-9a-z]{1,127}$";
-        return username.matches(pattern);
-    }
-
-    public boolean isValidInitialDeposit(double input) {
-        int fractional = (int) (input * 100) % 100;
-
-        if (input < 0.00 || input > 4294967295.99) {
-            return false;
-        }
-
-        // Check if fractional amount is exactly two digits
-        if (fractional < 0 || fractional > 99) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public ResponseEntity saveNewUser(User user) {
+    public ResponseEntity saveNewUser(User user, HttpSession session) {
         String username = user.getUsername();
         String password = user.getPassword();
         Double balance = user.getBalance();
@@ -50,7 +29,7 @@ public class UserService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
 
-        if (!isValidInitialDeposit(balance)) {
+        if (!isValidAmount(balance)) {
             String errorMessage = "Invalid input. Please provide valid initial balance.";
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
@@ -60,50 +39,102 @@ public class UserService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
 
+        //register and login success
+        session.setAttribute("currentUser", user);
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }
 
+    public ResponseEntity logIn(User user, HttpSession session) {
+        String username = user.getUsername();
+        String password = user.getPassword();
+
+        if (!isValidUsername(username) || !isValidPassword(password)) {
+            String errorMessage = "Invalid input. Please provide valid username and password.";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        if(!userRepository.existsUserByUsername(username)){
+            String errorMessage = "User Not Found";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        User userResult = userRepository.findUserByNameAndPassword(username, password);
+        if (userResult == null) {
+            String errorMessage = "Wrong Password";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+        }
+        session.setAttribute("currentUser", userResult);
+        return ResponseEntity.ok(userResult);
+    }
 
     /**
      * Below are methods for account transactions
      */
-    public ResponseEntity logIn(String username, String password) {
-        User user = userRepository.findUserByNameAndPassword(username, password);
-        if (user == null) {
-            String errorMessage = "Invalid username or password.";
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
-        }
 
-        return ResponseEntity.ok(user);
-    }
+    public ResponseEntity deposit(TransactionRequest request, HttpSession session) {
+        String username = request.getUsername();
+        Double amount = request.getAmount();
 
-    public ResponseEntity deposit(String username, double amount) {
-        if (!isValidUsername(username) || amount <= 0) {
-            String errorMessage = "Invalid input. Please provide a valid username and a positive amount for deposit.";
+        if (!isValidUsername(username) || !userRepository.existsUserByUsername(username)) {
+            String errorMessage = "Invalid input. Please provide a valid username";
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
 
-        userRepository.deposit(username, amount);
-        String successMessage = "Deposit of " + amount + " for user '" + username + "' successful.";
-        return ResponseEntity.ok(successMessage);
-    }
-
-    public ResponseEntity withdraw(String username, double amount) {
-        if (!isValidUsername(username) || amount <= 0) {
-            String errorMessage = "Invalid input. Please provide a valid username and a positive amount for withdrawal.";
+        if (!isValidAmount(amount)) {
+            String errorMessage = "Invalid input. Please provide valid amount.";
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
 
-        double currentBalance = userRepository.checkBalance(username);
+        try {
+            User updatedUser = userRepository.depositBalance(username, amount);
+            return ResponseEntity.ok(updatedUser);
+        } catch (IllegalStateException e) {
+            String errorMessage = "Deposit Failed";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+    }
+
+    public ResponseEntity withdraw(TransactionRequest request, HttpSession session) {
+        String username = request.getUsername();
+        Double amount = request.getAmount();
+
+        if (!isValidUsername(username) || !userRepository.existsUserByUsername(username)) {
+            String errorMessage = "Invalid input. Please provide a valid username";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        if (!isValidAmount(amount)) {
+            String errorMessage = "Invalid input. Please provide valid amount.";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        double currentBalance = userRepository.findBalanceByUsername(username);
         if (amount > currentBalance) {
             String errorMessage = "Insufficient balance for user '" + username + "'.";
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
         }
 
-        userRepository.withdraw(username, amount);
-        String successMessage = "Withdrawal of " + amount + " from user '" + username + "' successful.";
-        return ResponseEntity.ok(successMessage);
+        try {
+            User updatedUser = userRepository.withdrawBalance(username, amount);
+            return ResponseEntity.ok(updatedUser);
+        } catch (IllegalStateException e) {
+            String errorMessage = "Withdraw Failed";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
     }
+
+    public ResponseEntity checkBalance(HttpSession session){
+        String username = (String) session.getAttribute("currentUser");
+        if (!isValidUsername(username) || !userRepository.existsUserByUsername(username)) {
+            String errorMessage = "Invalid input. Please provide a valid username";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        User user = userRepository.findUserByUsername(username);
+        return ResponseEntity.ok(user);
+
+    }
+
 
 }
