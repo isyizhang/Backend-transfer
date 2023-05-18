@@ -15,8 +15,10 @@ Collaborators: Qihui Jian, Xiaowen Sun, Ying Che, Yi Zhang
 - Use the SQL script provided in [`bankAcct.sql`](https://github.com/isyizhang/BankApplication/blob/main/bankAcct.sql) to create database and table
 
 ### Build Project
-#### Backend:
+#### Backend：
+Download and Open code of project in IntelliJ IDEA
 1. Set up database account:
+   -  Open `src > main > resources`
     - Open the `application.properties` file, input your own MySQL username and password
 
 2. Start the backend:
