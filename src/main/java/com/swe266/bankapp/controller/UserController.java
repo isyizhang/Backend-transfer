@@ -20,7 +20,7 @@ public class UserController {
         return userService.saveNewUser(user, session);
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")   // fix CWE-598
     public ResponseEntity login(@RequestParam("username") String username,
                                 @RequestParam("password") String password,
                                 HttpSession session) {
