@@ -16,8 +16,10 @@ export default class SignIn extends Component {
     login = () => {
         console.log(this.state.username + this.state.password);
         axios.defaults.withCredentials = true;
+        // axios
+        //     .get("http://localhost:8080/login?"+`username=${this.state.username}&`+`password=${this.state.password}`)
         axios
-            .get("http://localhost:8080/login?"+`username=${this.state.username}&`+`password=${this.state.password}`)
+            .post("http://localhost:8080/login?"+`username=${this.state.username}&`+`password=${this.state.password}`)
             .then((response) => {
                 console.log(response.data);
                 localStorage.setItem('user', this.state.username);
