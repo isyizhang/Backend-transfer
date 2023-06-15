@@ -89,7 +89,7 @@ public class UserService {
      * Below are methods for account transactions
      */
     public ResponseEntity deposit(TransactionRequest request, HttpSession session) {
-        String username = request.getUsername();
+        String username = (String) session.getAttribute("currentUser"); ////fix CWE-285: Improper Authorization
         Double amount = request.getAmount();
 
         if (!isValidUsername(username) || !userRepository.existsUserByUsername(username)) {
@@ -113,7 +113,7 @@ public class UserService {
     }
 
     public ResponseEntity withdraw(TransactionRequest request, HttpSession session) {
-        String username = request.getUsername();
+        String username = (String) session.getAttribute("currentUser"); //fix CWE-285: Improper Authorization
         Double amount = request.getAmount();
 
         if (!isValidUsername(username) || !userRepository.existsUserByUsername(username)) {
