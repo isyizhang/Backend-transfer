@@ -42,51 +42,53 @@ export default class Main extends Component {
     };
 
     withdraw = () => {
-
-        const amount = Number(this.state.inputWithdrawValue).toFixed(2);
-
-        axios
-            .post('http://localhost:8080/withdraw', {
-                username: localStorage.getItem('user'),
-                amount: amount
-            })
-            .then((response) => {
-                this.setState({
-                    balance: response.data.balance.toFixed(2),
-                    inputWithdrawValue: '',
+        if (!this.state.inputDepositValue) {
+            message.info('Amount can not be null!');
+        }
+        else {
+            const amount = Number(this.state.inputWithdrawValue).toFixed(2);
+            axios
+                .post('http://localhost:8080/withdraw', {
+                    username: localStorage.getItem('user'),
+                    amount: amount
+                })
+                .then((response) => {
+                    this.setState({
+                        balance: response.data.balance.toFixed(2),
+                        inputWithdrawValue: '',
+                    });
+                    message.success('Withdraw successfully!');
+                })
+                .catch((error) => {
+                    message.error(error.response.data);
+                    console.log(this.state.username + this.state.inputWithdrawValue);
                 });
-                message.success('Withdraw successfully!');
-            })
-            .catch((error) => {
-                if (error.response.status === 500){
-                    console.log(error.response.status)
-                    message.error(error.response.data.trace)}
-                else{message.error(error.response.data);}
-                console.log(this.state.username + this.state.inputWithdrawValue);
-            });
+        }
     };
 
     deposit = () => {
-        const amount = Number(this.state.inputDepositValue).toFixed(2);
-        axios
-            .post('http://localhost:8080/deposit', {
-                username: localStorage.getItem('user'),
-                amount: amount
-            })
-            .then((response) => {
-                this.setState({
-                    
-                    balance: response.data.balance.toFixed(2),
-                    inputDepositValue: '',
+        if (!this.state.inputDepositValue) {
+            message.info('Amount can not be null!');
+        }
+        else {
+            const amount = Number(this.state.inputDepositValue).toFixed(2);
+            axios
+                .post('http://localhost:8080/deposit', {
+                    username: localStorage.getItem('user'),
+                    amount: amount
+                })
+                .then((response) => {
+                    this.setState({
+                        balance: response.data.balance.toFixed(2),
+                        inputDepositValue: '',
+                    });
+                    message.success('Deposit successfully!');
+                })
+                .catch((error) => {
+
+                    message.error(error.response.data);
                 });
-                message.success('Deposit successfully!');
-            })
-            .catch((error) => {
-                if (error.response.status === 500){
-                    console.log(error.response.status)
-                    message.error(error.response.data.trace)}
-                else{message.error(error.response.data);}
-            });
+        }
     };
 
     render() {
